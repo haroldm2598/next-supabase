@@ -1,8 +1,9 @@
 'use client';
-
-import { zodResolver } from '@hookform/resolvers/zod';
+import supabase from '@/config/supabaseClient';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,7 @@ const formArr: { name: FormFieldNames; placeholder: string; type: string }[] = [
 ];
 
 export default function CreateForm() {
+	const router = useRouter();
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -46,7 +48,20 @@ export default function CreateForm() {
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		console.log(values);
+		try {
+			const { data } = await supabase.from('smoothies').insert([
+				{
+					title: values.title,
+					desc: values.description,
+					rating: values.rating
+				}
+			]);
+
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+			router.push('/');
+		} catch (err) {
+			console.log(err);
+		}
 	}
 
 	return (
@@ -64,10 +79,21 @@ export default function CreateForm() {
 								</FormLabel>
 								<FormControl>
 									<Input
-										placeholder={item.placeholder}
-										className='w-full'
 										{...field}
+										className='w-full'
+										placeholder={item.placeholder}
 										type={item.type}
+										onChange={(e) => {
+											const { value, type } = e.target;
+											if (type === 'number') {
+												field.onChange(Number(value));
+											} else {
+												field.onChange(value);
+											}
+										}}
+										value={
+											item.type === 'number' ? Number(field.value) : field.value
+										}
 									/>
 								</FormControl>
 								<FormMessage />

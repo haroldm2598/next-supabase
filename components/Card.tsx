@@ -6,6 +6,7 @@ import { CardProps } from '@/lib/definition';
 import { Button } from './ui/button';
 import { Pen, Trash } from 'lucide-react';
 import SkeletonCard from './SkeletonCard';
+import Link from 'next/link';
 
 export default function Card() {
 	const [fetchError, setFetchError] = useState<string | null>(null);
@@ -52,7 +53,9 @@ export default function Card() {
 
 							<div className='self-end space-x-2'>
 								<Button size='icon' className='bg-customGrey rounded-full'>
-									<Pen className='text-gray-500' size='20' />
+									<Link href={`/${item.id}`}>
+										<Pen className='text-gray-500' size='20' />
+									</Link>
 								</Button>
 								<Button size='icon' className='bg-customGrey rounded-full'>
 									<Trash className='text-gray-500' size='20' />
