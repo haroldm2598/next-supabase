@@ -31,6 +31,18 @@ export default function Card() {
 		fetchCardItem();
 	}, []);
 
+	const handleDelete = async ({ id }: { id: number }): Promise<void> => {
+		const { data, error } = await supabase
+			.from('smoothies')
+			.delete()
+			.eq('id', id);
+		if (error) {
+			console.log(error);
+		} else {
+			console.log(data);
+		}
+	};
+
 	return (
 		<>
 			{fetchError && <p>{fetchError}</p>}
@@ -57,7 +69,11 @@ export default function Card() {
 										<Pen className='text-gray-500' size='20' />
 									</Link>
 								</Button>
-								<Button size='icon' className='bg-customGrey rounded-full'>
+								<Button
+									size='icon'
+									className='bg-customGrey rounded-full'
+									onClick={() => handleDelete({ id: item.id })}
+								>
 									<Trash className='text-gray-500' size='20' />
 								</Button>
 							</div>
