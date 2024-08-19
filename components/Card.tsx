@@ -1,24 +1,30 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import supabase from '@/config/supabaseClient';
 import { CardProps } from '@/lib/definition';
+import { useStore } from '@/hooks/useSort';
 
 import { Button } from './ui/button';
-import { Pen, Trash } from 'lucide-react';
+import { Pen } from 'lucide-react';
 import SkeletonCard from './SkeletonCard';
-import Link from 'next/link';
+import DeleteButton from './DeleteButton';
 
 export default function Card() {
+	const { orderBy } = useStore();
 	const [fetchError, setFetchError] = useState<string | null>(null);
-	const [cardItem, setCardItem] = useState<CardProps[] | null>(null);
+	const [cardItem, setCardItem] = useState<CardProps[] | []>([]);
 
 	useEffect(() => {
 		const fetchCardItem = async () => {
-			const { data, error } = await supabase.from('smoothies').select();
+			const { data, error } = await supabase
+				.from('smoothies')
+				.select()
+				.order(orderBy, { ascending: true });
 
 			if (error) {
 				setFetchError('Could not fetch data');
-				setCardItem(null);
+				setCardItem([]);
 				console.log(error);
 			}
 
@@ -29,18 +35,10 @@ export default function Card() {
 		};
 
 		fetchCardItem();
-	}, []);
+	}, [orderBy]);
 
-	const handleDelete = async ({ id }: { id: number }): Promise<void> => {
-		const { data, error } = await supabase
-			.from('smoothies')
-			.delete()
-			.eq('id', id);
-		if (error) {
-			console.log(error);
-		} else {
-			console.log(data);
-		}
+	const handleDeleteSuccess = (id: number) => {
+		setCardItem((prevData) => prevData?.filter((item) => item.id !== id));
 	};
 
 	return (
@@ -69,13 +67,17 @@ export default function Card() {
 										<Pen className='text-gray-500' size='20' />
 									</Link>
 								</Button>
-								<Button
+								<DeleteButton
+									id={item.id}
+									onSuccess={() => handleDeleteSuccess(item.id)}
+								/>
+								{/* <Button
 									size='icon'
 									className='bg-customGrey rounded-full'
 									onClick={() => handleDelete({ id: item.id })}
 								>
 									<Trash className='text-gray-500' size='20' />
-								</Button>
+								</Button> */}
 							</div>
 						</div>
 					);
